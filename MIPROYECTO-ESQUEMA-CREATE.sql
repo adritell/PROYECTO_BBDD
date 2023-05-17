@@ -46,13 +46,26 @@ create table actividades_especiales(
 	foreign key (id_monitor) references monitor(id_monitor)
 );
 
+create table horario (
+	id_usuario int,
+	id_actividad int,
+	dia int,
+	mes int,
+	hora varchar(20),
+	primary key(id_usuario,id_actividad),
+	foreign key (id_usuario) references usuario(id_usuario),
+	foreign key (id_actividad) references actividades_especiales(id_actividad)
+	
+
+);
+
 create table reserva (
 	id_reserva int auto_increment primary key,
 	id_usuario int,
 	id_actividad int,
 	fecha_reserva date,
 	foreign key (id_usuario) references usuario(id_usuario),
-	foreign key (id_actividad) references actividades_especiales(id_actividad)
+	foreign key (id_actividad) references horario(id_actividad)
 );
 
 
@@ -105,5 +118,3 @@ create table rutina_ejercicio(
 	foreign key (id_rutina) references rutina(id_rutina),
 	foreign key (id_ejercicio) references ejercicios_gym(id_ejercicio)
 );
-
-
