@@ -4,56 +4,52 @@ use gimnasio_proyecto;
 
 create table productos_nutricion (
 	id_producto int auto_increment primary key,
-	nombre_producto varchar(50),
-	descripcion varchar(50),
-	precio decimal (2,2),
-	stock varchar(10),
+	nombre_producto varchar(200),
+	descripcion varchar(200),
+	precio decimal (5,2),
+	stock varchar(20),
 	fecha_vencimiento date,
-	tipo_producto varchar(20)
+	tipo_producto varchar(200)
 );
 
 create table usuario (
 	id_usuario int auto_increment primary key,
-	nombre varchar(50),
-	apellidos varchar(50),
-	telefono varchar(20),
-	email varchar(40),
-	genero varchar(5),
+	nombre varchar(200),
+	apellidos varchar(200),
+	telefono varchar(200),
+	email varchar(100),
+	genero varchar(20),
 	fecha_inscripcion date,
-	peso decimal(2,2),
-	altura decimal(2,2),
-	objetivo varchar(30)
+	peso decimal(5,2),
+	altura decimal(5,2),
+	objetivo varchar(200)
 );
 
 create table monitor (
 	id_monitor int auto_increment primary key,
-	nombre varchar(50),
-	apellidos varchar(50),
-	titulacion varchar(30),
-	especialidad varchar(40),
+	nombre varchar(200),
+	apellidos varchar(200),
+	titulacion varchar(200),
+	especialidad varchar(200),
 	fecha_contratacion date,
-	telefono varchar(30)
+	telefono varchar(50)
 );
 
 create table actividades_especiales(
 	id_actividad int auto_increment primary key,
 	id_monitor int,
-	nombre_actividad varchar(20),
-	descripcion varchar(20),
-	fecha date,
+	nombre_actividad varchar(50),
+	descripcion varchar(200),
 	duracion int,
 	aforo_maximo int,
 	foreign key (id_monitor) references monitor(id_monitor)
 );
 
 create table horario (
-	id_usuario int,
+	id_horario int auto_increment primary key,
 	id_actividad int,
 	dia int,
-	mes int,
-	hora varchar(20),
-	primary key(id_usuario,id_actividad),
-	foreign key (id_usuario) references usuario(id_usuario),
+	hora varchar(50),
 	foreign key (id_actividad) references actividades_especiales(id_actividad)
 	
 
@@ -69,21 +65,11 @@ create table reserva (
 );
 
 
-
-create table compra (
-	id_compra int auto_increment primary key,
-	id_producto int,
-	id_usuario int,
-	cantidad int,
-	foreign key (id_producto) references productos_nutricion(id_producto),
-	foreign key (id_usuario) references usuario(id_usuario)
-);
-
 create table rutina (
 	id_rutina int auto_increment primary key,
 	id_monitor int,
-	nombre_rutina varchar(20),
-	descripcion varchar(60),
+	nombre_rutina varchar(100),
+	descripcion varchar(200),
 	foreign key (id_monitor) references monitor(id_monitor)
 );
 
@@ -99,12 +85,12 @@ create table usuarios_rutina (
 
 create table ejercicios_gym(
 	id_ejercicio int auto_increment primary key,
-	nombre varchar(50),
-	descripcion varchar(120),
-	tipo varchar(20),
-	parte_cuerpo varchar(20),
-	equipo_necesario varchar(10),
-	nivel varchar(15),
+	nombre varchar(100),
+	descripcion varchar(1000),
+	tipo varchar(50),
+	parte_cuerpo varchar(50),
+	equipo_necesario varchar(50),
+	nivel varchar(50),
 	video varchar(10)
 );
 
@@ -117,4 +103,26 @@ create table rutina_ejercicio(
 	primary key(id_rutina,id_ejercicio),
 	foreign key (id_rutina) references rutina(id_rutina),
 	foreign key (id_ejercicio) references ejercicios_gym(id_ejercicio)
+);
+
+create table pedidos(
+	id_pedido int auto_increment primary key,
+	id_usuario int,
+	fecha_pedido date,
+	fecha_esperada date,
+	fecha_entrega date,
+	estado varchar(200),
+	foreign key (id_usuario) references usuario (id_usuario)
+);
+
+create table lineas_pedido(
+	id_pedido int,
+	cod_producto int,
+	cantidad int,
+	precio_unidad decimal(5,2),
+	num_linea int,
+	primary key(id_pedido,cod_producto),
+	foreign key(id_pedido) references pedidos(id_pedido),
+	foreign key(cod_producto) references productos_nutricion(id_producto)
+	
 );
