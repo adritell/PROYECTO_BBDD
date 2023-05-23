@@ -1,19 +1,15 @@
 -- CONSULTAS
 
-
 use gimnasio_proyecto;
 
--- 1. Muestra el producto del tipo "proteinas" m·s vendido.
+-- 1.Obtener la cantidad total de ventas de productos de nutrici√≥n por mes:
 
-select pn2.*, from productos_nutricion pn2 where pn2.nombre_producto like (
-select pn.nombre_producto from productos_nutricion pn inner join compra c 
-on pn.id_producto =c.id_producto group by pn.nombre_producto order by sum(pn.precio*c.cantidad) desc limit 1
-);
-
+SELECT DATE_FORMAT(p.fecha_pedido , '%Y-%m') AS mes, SUM(lp.cantidad) AS total_ventas
+FROM pedidos p inner join lineas_pedido lp on p.id_pedido = lp.id_pedido inner join productos_nutricion pn on lp.cod_producto =pn.id_producto 
+GROUP BY mes;
 
 
-
--- 2. Muestra el usuario que m·s ha gastado en productos de nutriciÛn.
+-- 2. Muestra el usuario que m√°s ha gastado en productos de nutrici√≥n.
 
 select u.id_usuario ,u.nombre ,sum(pn.precio*c.cantidad) as total from productos_nutricion pn inner join compra c
 on pn.id_producto =c.id_producto inner join usuario u on c.id_usuario =u.id_usuario group by u.id_usuario 
@@ -21,23 +17,37 @@ order by total desc limit 1;
 
 
 
--- 3. Cual es la actividad que m·s reservas ha tenido. Muestra todos los datos del monitor que la imparte.
+-- 3. Cual es la actividad que m√°s reservas ha tenido. Muestra todos los datos del monitor que la imparte.
 
 select ae.nombre_actividad ,count(r.id_actividad) as num_reservas, m.* from reserva r inner join actividades_especiales ae 
 on r.id_actividad =ae.id_actividad inner join monitor m on ae.id_monitor =m.id_monitor group by ae.nombre_actividad 
 order by num_reservas desc limit 1;
 
 
--- 4. Muestra cual es el monitor que lleva m·s tiempo contratado.
-select m.* from monitor m where m.fecha_contratacion like (select min(m2.fecha_contratacion) from monitor m2 );
 
 
--- 5. Muestra la rutina m·s usada por los usuarios y los datos del monitor que la realizÛ.
+-- 4.Obtener los clientes que han comprado todos los productos de nutrici√≥n disponibles 
+SELECT u.* FROM usuario u
+WHERE NOT EXISTS (
+    SELECT pn.id_producto
+    FROM productos_nutricion pn
+    WHERE NOT EXISTS (
+        SELECT lp.cod_producto
+        FROM pedidos p INNER JOIN lineas_pedido lp ON p.id_pedido = lp.id_pedido INNER JOIN productos_nutricion pn ON lp.cod_producto = pn.id_producto
+        WHERE p.id_usuario = u.id_usuario AND lp.cod_producto = pn.id_producto
+    )
+);
 
-select r.nombre_rutina ,count(ur.id_rutina) as num_veces,m.* from usuarios_rutina ur inner join rutina r 
-on ur.id_rutina =r.id_rutina inner join monitor m on r.id_monitor =m.id_monitor group by r.nombre_rutina 
-order by num_veces desc limit 1;
 
+-- 5.Obtener los productos de nutrici√≥n que no han sido comprados por ning√∫n cliente:
+delete from lineas_pedido where cod_producto =9; 
+
+SELECT pn2.* FROM productos_nutricion pn2
+WHERE NOT EXISTS (
+  SELECT lp.cod_producto  
+  FROM pedidos p INNER JOIN lineas_pedido lp ON p.id_pedido = lp.id_pedido INNER JOIN productos_nutricion pn ON lp.cod_producto = pn.id_producto
+  WHERE pn2.id_producto = pn.id_producto
+);
 
 ________________________________________________________________________________________________________________________
 
@@ -68,7 +78,7 @@ select get_monitor_info (3);
 
 
 
-/*Dado un id de actividad especial pasado por parametros, devolver la duraciÛn total en horas de todas las sesiones 
+/*Dado un id de actividad especial pasado por parametros, devolver la duraci√≥n total en horas de todas las sesiones 
  * realizadas de esa actividad.
  
 use gimnasio_proyecto;
@@ -91,8 +101,8 @@ select actividades_duracion (2);
 						-- PROCEDIMIENTOS
 
 */
-/*Procedimiento que muestre todos los usuarios que han recibido una rutina del entrenador pasado por par·metros (usando una
- * funciÛn desarrollada antes).
+/*Procedimiento que muestre todos los usuarios que han recibido una rutina del entrenador pasado por par√°metros (usando una
+ * funci√≥n desarrollada antes).
 
 
 delimiter $$
@@ -109,8 +119,8 @@ call mostrar_usuarios_x_entrenador(3);
  */
 
 
-/*Haz un procedimiento que, dado un nombre de ejercicio pasado por par·metros, devuelva la dificultad,el nombre y descripciÛn
- * del ejercicio, asÌ como en que rutinas se encuentra ya incluido y cu·ntas veces.
+/*Haz un procedimiento que, dado un nombre de ejercicio pasado por par√°metros, devuelva la dificultad,el nombre y descripci√≥n
+ * del ejercicio, as√≠ como en que rutinas se encuentra ya incluido y cu√°ntas veces.
 
 
 delimiter $$
@@ -142,7 +152,7 @@ use gimnasio_proyecto;
 					    declare contador2 integer default 1;
 					    declare dia varchar(20) default '';
 					    declare mes varchar(20) default '';
-					    declare c1 cursor for  -- CURSOR DE A—OS
+					    declare c1 cursor for  -- CURSOR DE A√ëOS
 					        select year(c.fecha_compra), sum(pn.precio*c.cantidad)
 					        from productos_nutricion pn
 					        inner join compra c on pn.id_producto = c.id_producto
@@ -163,23 +173,23 @@ use gimnasio_proyecto;
 						    select sum(pn.precio*c.cantidad) into total
 						    from productos_nutricion pn
 						    inner join compra c on pn.id_producto = c.id_producto;
-					   		set salida = concat(salida, total, 'Ä\n');
-					    open c1;    -- recorremos el cursor de aÒos
+					   		set salida = concat(salida, total, '‚Ç¨\n');
+					    open c1;    -- recorremos el cursor de a√±os
 					    while (NOT done) do
 					        fetch c1 into anio, total;
 					        if (NOT done) then
-					            set salida = concat(salida, 'En ', anio, ': ', total, 'Ä\n');
+					            set salida = concat(salida, 'En ', anio, ': ', total, '‚Ç¨\n');
 					        end if;
 					    end while;
 					    close c1;
 					    set salida = concat(salida, '=============LISTADOS==========\n');
-					    set salida = concat(salida, '----------Valor de las ventas por dÌa--------\n');
+					    set salida = concat(salida, '----------Valor de las ventas por d√≠a--------\n');
 					    set done = false;     -- hay que iniciarlo otra vez porque lo cambiamos a true antes
 					    open c2;
 					    while (NOT done) do
 					        fetch c2 into dia, total;
 					        if (NOT done) then
-					            set salida = concat(salida, contador, '.', dia, ': ', total, 'Ä\n');
+					            set salida = concat(salida, contador, '.', dia, ': ', total, '‚Ç¨\n');
 					            set contador = contador + 1;
 					        end if;
 					    end while;
@@ -190,7 +200,7 @@ use gimnasio_proyecto;
 					    while (NOT done) do
 					        fetch c3 into mes, total;
 					        if (NOT done) then    
-						set salida = concat(salida, contador2, '.', mes, ': ', total, 'Ä\n');
+						set salida = concat(salida, contador2, '.', mes, ': ', total, '‚Ç¨\n');
 						set contador2 = contador2 + 1;
 						end if;
 					    end while;
