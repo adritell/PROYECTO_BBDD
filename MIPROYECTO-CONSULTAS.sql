@@ -9,11 +9,13 @@ FROM pedidos p inner join lineas_pedido lp on p.id_pedido = lp.id_pedido inner j
 GROUP BY mes;
 
 
--- 2. Muestra el usuario que más ha gastado en productos de nutrición.
+-- 2.Obtén los datos del usuario y el numero de compras realizadas de cada usuario en un rango de fechas especifico
 
-select u.id_usuario ,u.nombre ,sum(pn.precio*c.cantidad) as total from productos_nutricion pn inner join compra c
-on pn.id_producto =c.id_producto inner join usuario u on c.id_usuario =u.id_usuario group by u.id_usuario 
-order by total desc limit 1;
+SELECT u.id_usuario, u.nombre, u.apellidos, COUNT(*) AS numero_compras
+FROM usuario u
+JOIN pedidos p ON u.id_usuario = p.id_usuario
+WHERE p.fecha_pedido BETWEEN '2006-01-17' AND '2009-00-01'
+GROUP BY u.id_usuario, u.nombre, u.apellidos;
 
 
 
@@ -26,17 +28,20 @@ order by num_reservas desc limit 1;
 
 
 
--- 4.Obtener los clientes que han comprado todos los productos de nutrición disponibles 
-SELECT u.* FROM usuario u
-WHERE NOT EXISTS (
-    SELECT pn.id_producto
-    FROM productos_nutricion pn
-    WHERE NOT EXISTS (
-        SELECT lp.cod_producto
-        FROM pedidos p INNER JOIN lineas_pedido lp ON p.id_pedido = lp.id_pedido INNER JOIN productos_nutricion pn ON lp.cod_producto = pn.id_producto
-        WHERE p.id_usuario = u.id_usuario AND lp.cod_producto = pn.id_producto
+-- 4.Obtén el promedio de edad de los usuarios que han comprado el producto de nutrición "Proteina Whey"
+
+SELECT AVG(edad) AS promedio_edad
+FROM (
+    SELECT TIMESTAMPDIFF(YEAR, usuario.edad , CURDATE()) AS edad
+    FROM usuario
+    WHERE id_usuario IN (
+        SELECT id_usuario
+        FROM pedidos
+        INNER JOIN lineas_pedido ON pedidos.id_pedido = lineas_pedido.id_pedido
+        INNER JOIN productos_nutricion ON lineas_pedido.cod_producto = productos_nutricion.id_producto
+        WHERE nombre_producto = 'Proteina Whey'
     )
-);
+) AS clientes;
 
 
 -- 5.Obtener los productos de nutrición que no han sido comprados por ningún cliente:
