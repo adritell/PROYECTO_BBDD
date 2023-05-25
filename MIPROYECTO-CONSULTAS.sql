@@ -32,7 +32,7 @@ order by num_reservas desc limit 1;
 
 SELECT AVG(edad) AS promedio_edad
 FROM (
-    SELECT TIMESTAMPDIFF(YEAR, usuario.edad , CURDATE()) AS edad
+    SELECT TIMESTAMPDIFF(YEAR, DATE_ADD(CURDATE(), INTERVAL -usuario.edad YEAR), CURDATE()) AS edad
     FROM usuario
     WHERE id_usuario IN (
         SELECT id_usuario
