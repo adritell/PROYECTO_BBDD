@@ -22,7 +22,8 @@ create table usuario (
 	fecha_inscripcion date,
 	peso decimal(5,2),
 	altura decimal(5,2),
-	objetivo varchar(200)
+	objetivo varchar(200),
+	edad int
 );
 
 create table monitor (
@@ -58,10 +59,10 @@ create table horario (
 create table reserva (
 	id_reserva int auto_increment primary key,
 	id_usuario int,
-	id_actividad int,
+	id_horario int,
 	fecha_reserva date,
 	foreign key (id_usuario) references usuario(id_usuario),
-	foreign key (id_actividad) references horario(id_actividad)
+	foreign key (id_horario) references horario(id_horario)
 );
 
 
