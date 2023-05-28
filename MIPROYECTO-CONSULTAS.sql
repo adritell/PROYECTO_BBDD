@@ -21,9 +21,9 @@ GROUP BY u.id_usuario, u.nombre, u.apellidos;
 
 -- 3. Cual es la actividad que más reservas ha tenido. Muestra todos los datos del monitor que la imparte.
 
-select ae.nombre_actividad ,count(r.id_actividad) as num_reservas, m.* from reserva r inner join actividades_especiales ae 
-on r.id_actividad =ae.id_actividad inner join monitor m on ae.id_monitor =m.id_monitor group by ae.nombre_actividad 
-order by num_reservas desc limit 1;
+select ae.nombre_actividad ,count(r.id_reserva) as num_reservas, m.* from reserva r inner join horario h on r.id_horario =h.id_horario 
+inner join actividades_especiales ae on h.id_actividad =ae.id_actividad inner join monitor m on ae.id_monitor =m.id_monitor 
+group by ae.nombre_actividad order by num_reservas desc limit 1;
 
 
 
