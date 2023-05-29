@@ -92,8 +92,8 @@ DELIMITER $$
 CREATE FUNCTION actividades_duracion (actividad_id INT) RETURNS int deterministic
 BEGIN
  	DECLARE duracion_total int;
- 	SELECT sum(ae.duracion)/60 into duracion_total from actividades_especiales ae inner join reserva r 
- 	on ae.id_actividad =r.id_actividad 
+ 	SELECT sum(ae.duracion)/60 into duracion_total from reserva r inner join horario h on r.id_horario =h.id_horario 
+inner join actividades_especiales ae on h.id_actividad =ae.id_actividad inner join monitor m on ae.id_monitor =m.id_monitor 
 	where ae.id_actividad =actividad_id;
  
  RETURN duracion_total;
@@ -158,26 +158,26 @@ use gimnasio_proyecto;
 					    declare dia varchar(20) default '';
 					    declare mes varchar(20) default '';
 					    declare c1 cursor for  -- CURSOR DE AÑOS
-					        select year(c.fecha_compra), sum(pn.precio*c.cantidad)
+					        select year(p.fecha_pedido), sum(pn.precio *lp.cantidad)
 					        from productos_nutricion pn
-					        inner join compra c on pn.id_producto = c.id_producto
-					        group by year(c.fecha_compra);
+					        inner join lineas_pedido lp on pn.id_producto = lp.cod_producto inner join pedidos p on lp.id_pedido  =p.id_pedido 
+					        group by year(p.fecha_pedido);
 					    declare c2 cursor for   -- CURSOR DIAS
-					        select dayname(c.fecha_compra), sum(pn.precio*c.cantidad)
+					        select dayname(p.fecha_pedido), sum(pn.precio*lp.cantidad)
 					        from productos_nutricion pn
-					        inner join compra c on pn.id_producto = c.id_producto
-					        group by dayname(c.fecha_compra)
-					        order by dayofweek(c.fecha_compra) asc;
+					        inner join lineas_pedido lp on pn.id_producto = lp.cod_producto inner join pedidos p on lp.id_pedido  =p.id_pedido 
+					        group by dayname(p.fecha_pedido)
+					        order by dayofweek(p.fecha_pedido) asc;
 					    declare c3 cursor for   -- CURSOR MESES
-					        select monthname(c.fecha_compra), sum(pn.precio*c.cantidad)
+					        select monthname(p.fecha_pedido), sum(pn.precio*lp.cantidad)
 					        from productos_nutricion pn
-					        inner join compra c on pn.id_producto = c.id_producto
-					        group by monthname(c.fecha_compra)
-					        order by month(c.fecha_compra) asc;
+					        inner join lineas_pedido lp on pn.id_producto = lp.cod_producto inner join pedidos p on lp.id_pedido  =p.id_pedido 
+					        group by monthname(p.fecha_pedido)
+					        order by month(p.fecha_pedido) asc;
 					    declare continue HANDLER FOR NOT FOUND SET done = TRUE;   -- para salir del bucle del cursor
-						    select sum(pn.precio*c.cantidad) into total
-						    from productos_nutricion pn
-						    inner join compra c on pn.id_producto = c.id_producto;
+						    select sum(pn.precio*lp.cantidad) into total
+						     from productos_nutricion pn
+					        inner join lineas_pedido lp on pn.id_producto = lp.cod_producto inner join pedidos p on lp.id_pedido  =p.id_pedido; 
 					   		set salida = concat(salida, total, '€\n');
 					    open c1;    -- recorremos el cursor de años
 					    while (NOT done) do
@@ -216,4 +216,5 @@ use gimnasio_proyecto;
 					end &&
 					
 					call mostrar_estadisticas(); 
+
 
