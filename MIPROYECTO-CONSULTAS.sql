@@ -218,3 +218,52 @@ use gimnasio_proyecto;
 					call mostrar_estadisticas(); 
 
 
+______________________________________________________________________________________________________________________________
+						TRIGGERS
+create table bajas_usuario (
+	usuario_id int not null,
+	nombre varchar(50) not null,
+	apellidos varchar(50) not null,
+	telefono varchar(50) not null,
+	delete_time timestamp default current_timestamp
+);
+
+Delimiter $$
+create trigger copiar_a_bajas
+after delete on usuario
+for each row
+begin
+	insert into bajas_usuario (usuario_id, nombre, apellidos, telefono, delete_time)
+	values (old.id_usuario, OLD.nombre, OLD.apellidos, OLD.telefono, NOW());
+end $$
+
+delimiter ;
+
+delete from usuario where id_usuario=540;
+
+
+
+________________________________________________________________________________
+
+
+create table antiguo_monitor (
+	monitor_id int not null,
+	nombre varchar(50) not null,
+	apellidos varchar(50) not null,
+	telefono varchar(50) not null,
+	modificado timestamp default current_timestamp,
+	delete_user varchar(60)
+);
+
+Delimiter $$
+create trigger actualizar_monitor after update on monitor
+for each row
+begin
+     if OLD.id_monitor is not null then
+	insert into antiguo_monitor(monitor_id, nombre, apellidos, telefono,modificado, delete_user)
+	values (old.id_monitor, OLD.nombre, OLD.apellidos, OLD.telefono, NOW(),USER());
+     end if;
+end $$
+
+delimiter ;
+
